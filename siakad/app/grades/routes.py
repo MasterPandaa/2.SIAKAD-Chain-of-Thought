@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
-from flask_login import login_required, current_user
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required
 from sqlalchemy import select
 
 from ..extensions import db
-from ..models import Subject, Enrollment, Grade, Student, Classroom
+from ..models import Classroom, Enrollment, Grade, Student, Subject
 from ..utils.decorators import role_required
 from .forms import GradeInputForm, ReportFilterForm
 
@@ -12,7 +12,8 @@ bp = Blueprint("grades", __name__, url_prefix="/grades")
 
 def _subjects_for_user():
     q = select(Subject).order_by(Subject.name)
-    role = getattr(getattr(current_user, "role", None), "value", current_user.role)
+    role = getattr(getattr(current_user, "role", None),
+                   "value", current_user.role)
     if role == "teacher" and current_user.teacher:
         q = q.where(Subject.teacher_id == current_user.teacher.id)
     return db.session.execute(q).scalars().all()
@@ -34,23 +35,33 @@ def manage_subject(subject_id):
     if not subject:
         flash("Mata pelajaran tidak ditemukan.", "warning")
         return redirect(url_for("grades.subjects"))
-    role = getattr(getattr(current_user, "role", None), "value", current_user.role)
+    role = getattr(getattr(current_user, "role", None),
+                   "value", current_user.role)
     if role == "teacher":
         if not current_user.teacher or subject.teacher_id != current_user.teacher.id:
             flash("Anda tidak berhak mengelola mata pelajaran ini.", "danger")
             return redirect(url_for("grades.subjects"))
 
     class_id = request.args.get("classroom_id", type=int)
-    classes = db.session.execute(select(Classroom).order_by(Classroom.name)).scalars().all()
+    classes = (
+        db.session.execute(select(Classroom).order_by(
+            Classroom.name)).scalars().all()
+    )
     if not classes:
         flash("Belum ada data kelas. Tambahkan kelas terlebih dahulu.", "warning")
         return redirect(url_for("classes.create"))
     if class_id is None:
         class_id = classes[0].id
     classroom = db.session.get(Classroom, class_id)
-    students = db.session.execute(
-        select(Student).where(Student.classroom_id == class_id).order_by(Student.name)
-    ).scalars().all()
+    students = (
+        db.session.execute(
+            select(Student)
+            .where(Student.classroom_id == class_id)
+            .order_by(Student.name)
+        )
+        .scalars()
+        .all()
+    )
 
     if request.method == "POST":
         form = GradeInputForm()
@@ -59,9 +70,17 @@ def manage_subject(subject_id):
             siswa = db.session.get(Student, sid)
             if not siswa or siswa.classroom_id != class_id:
                 flash("Siswa tidak valid.", "danger")
-                return redirect(url_for("grades.manage_subject", subject_id=subject_id, classroom_id=class_id))
+                return redirect(
+                    url_for(
+                        "grades.manage_subject",
+                        subject_id=subject_id,
+                        classroom_id=class_id,
+                    )
+                )
             enr = db.session.execute(
-                select(Enrollment).where(Enrollment.student_id == sid, Enrollment.subject_id == subject_id)
+                select(Enrollment).where(
+                    Enrollment.student_id == sid, Enrollment.subject_id == subject_id
+                )
             ).scalar_one_or_none()
             if not enr:
                 enr = Enrollment(student_id=sid, subject_id=subject_id)
@@ -79,18 +98,28 @@ def manage_subject(subject_id):
             grade.recompute_final()
             db.session.commit()
             flash(f"Nilai untuk {siswa.name} disimpan.", "success")
-            return redirect(url_for("grades.manage_subject", subject_id=subject_id, classroom_id=class_id))
+            return redirect(
+                url_for(
+                    "grades.manage_subject",
+                    subject_id=subject_id,
+                    classroom_id=class_id,
+                )
+            )
         else:
             flash("Input nilai tidak valid.", "danger")
 
     forms = []
     for s in students:
         enr = db.session.execute(
-            select(Enrollment).where(Enrollment.student_id == s.id, Enrollment.subject_id == subject_id)
+            select(Enrollment).where(
+                Enrollment.student_id == s.id, Enrollment.subject_id == subject_id
+            )
         ).scalar_one_or_none()
         gr = None
         if enr:
-            gr = db.session.execute(select(Grade).where(Grade.enrollment_id == enr.id)).scalar_one_or_none()
+            gr = db.session.execute(
+                select(Grade).where(Grade.enrollment_id == enr.id)
+            ).scalar_one_or_none()
         f = GradeInputForm()
         f.student_id.data = str(s.id)
         f.tugas.data = gr.tugas if gr and gr.tugas is not None else None
@@ -115,13 +144,19 @@ def transcript_me():
     if not student:
         flash("Akun ini tidak terkait dengan data siswa.", "warning")
         return redirect(url_for("dashboard.index"))
-    enrollments = db.session.execute(
-        select(Enrollment).where(Enrollment.student_id == student.id)
-    ).scalars().all()
+    enrollments = (
+        db.session.execute(
+            select(Enrollment).where(Enrollment.student_id == student.id)
+        )
+        .scalars()
+        .all()
+    )
     items = []
     for enr in enrollments:
         subject = db.session.get(Subject, enr.subject_id)
-        grade = db.session.execute(select(Grade).where(Grade.enrollment_id == enr.id)).scalar_one_or_none()
+        grade = db.session.execute(
+            select(Grade).where(Grade.enrollment_id == enr.id)
+        ).scalar_one_or_none()
         items.append((subject, grade))
     return render_template("grades/transcript.html", student=student, items=items)
 
@@ -134,13 +169,19 @@ def transcript_admin(student_id):
     if not student:
         flash("Siswa tidak ditemukan.", "warning")
         return redirect(url_for("students.index"))
-    enrollments = db.session.execute(
-        select(Enrollment).where(Enrollment.student_id == student.id)
-    ).scalars().all()
+    enrollments = (
+        db.session.execute(
+            select(Enrollment).where(Enrollment.student_id == student.id)
+        )
+        .scalars()
+        .all()
+    )
     items = []
     for enr in enrollments:
         subject = db.session.get(Subject, enr.subject_id)
-        grade = db.session.execute(select(Grade).where(Grade.enrollment_id == enr.id)).scalar_one_or_none()
+        grade = db.session.execute(
+            select(Grade).where(Grade.enrollment_id == enr.id)
+        ).scalar_one_or_none()
         items.append((subject, grade))
     return render_template("grades/transcript.html", student=student, items=items)
 
@@ -152,7 +193,10 @@ def report():
     form = ReportFilterForm()
     subs = _subjects_for_user()
     form.subject_id.choices = [(s.id, f"{s.code} - {s.name}") for s in subs]
-    classes = db.session.execute(select(Classroom).order_by(Classroom.name)).scalars().all()
+    classes = (
+        db.session.execute(select(Classroom).order_by(
+            Classroom.name)).scalars().all()
+    )
     form.classroom_id.choices = [(c.id, c.name) for c in classes]
 
     rows = None
@@ -161,16 +205,28 @@ def report():
     if form.validate_on_submit():
         subject = db.session.get(Subject, form.subject_id.data)
         classroom = db.session.get(Classroom, form.classroom_id.data)
-        students = db.session.execute(
-            select(Student).where(Student.classroom_id == classroom.id).order_by(Student.name)
-        ).scalars().all()
+        students = (
+            db.session.execute(
+                select(Student)
+                .where(Student.classroom_id == classroom.id)
+                .order_by(Student.name)
+            )
+            .scalars()
+            .all()
+        )
         rows = []
         for s in students:
             enr = db.session.execute(
-                select(Enrollment).where(Enrollment.student_id == s.id, Enrollment.subject_id == subject.id)
+                select(Enrollment).where(
+                    Enrollment.student_id == s.id, Enrollment.subject_id == subject.id
+                )
             ).scalar_one_or_none()
             grade = None
             if enr:
-                grade = db.session.execute(select(Grade).where(Grade.enrollment_id == enr.id)).scalar_one_or_none()
+                grade = db.session.execute(
+                    select(Grade).where(Grade.enrollment_id == enr.id)
+                ).scalar_one_or_none()
             rows.append((s, grade))
-    return render_template("grades/report.html", form=form, rows=rows, subject=subject, classroom=classroom)
+    return render_template(
+        "grades/report.html", form=form, rows=rows, subject=subject, classroom=classroom
+    )

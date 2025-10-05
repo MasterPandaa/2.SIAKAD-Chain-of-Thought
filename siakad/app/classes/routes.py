@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required
 from sqlalchemy import select
 
@@ -14,7 +14,10 @@ bp = Blueprint("classes", __name__, url_prefix="/classes")
 @login_required
 @role_required("admin")
 def index():
-    classes = db.session.execute(select(Classroom).order_by(Classroom.name)).scalars().all()
+    classes = (
+        db.session.execute(select(Classroom).order_by(
+            Classroom.name)).scalars().all()
+    )
     return render_template("classes/index.html", classes=classes)
 
 

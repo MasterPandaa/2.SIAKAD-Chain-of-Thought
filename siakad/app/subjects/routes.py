@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
-from flask_login import login_required, current_user
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required
 from sqlalchemy import select
 
 from ..extensions import db
@@ -11,7 +11,10 @@ bp = Blueprint("subjects", __name__, url_prefix="/subjects")
 
 
 def _teacher_choices():
-    teachers = db.session.execute(select(Teacher).order_by(Teacher.name)).scalars().all()
+    teachers = (
+        db.session.execute(select(Teacher).order_by(
+            Teacher.name)).scalars().all()
+    )
     return [(-1, "- Tidak ada -")] + [(t.id, t.name) for t in teachers]
 
 
@@ -20,7 +23,8 @@ def _teacher_choices():
 @role_required("admin", "teacher")
 def index():
     q = select(Subject).order_by(Subject.name)
-    role = getattr(getattr(current_user, "role", None), "value", current_user.role)
+    role = getattr(getattr(current_user, "role", None),
+                   "value", current_user.role)
     if role == "teacher" and current_user.teacher:
         q = q.where(Subject.teacher_id == current_user.teacher.id)
     subjects = db.session.execute(q).scalars().all()
@@ -35,17 +39,28 @@ def create():
     form.teacher_id.choices = _teacher_choices()
     if form.validate_on_submit():
         teacher_id = form.teacher_id.data if form.teacher_id.data != -1 else None
-        s = Subject(code=form.code.data.strip(), name=form.name.data.strip(), sks=form.sks.data, teacher_id=teacher_id)
+        s = Subject(
+            code=form.code.data.strip(),
+            name=form.name.data.strip(),
+            sks=form.sks.data,
+            teacher_id=teacher_id,
+        )
         db.session.add(s)
         try:
             db.session.commit()
         except Exception:
             db.session.rollback()
-            flash("Gagal menyimpan mata pelajaran (kemungkinan kode duplikat).", "danger")
-            return render_template("subjects/form.html", form=form, title="Tambah Mata Pelajaran")
+            flash(
+                "Gagal menyimpan mata pelajaran (kemungkinan kode duplikat).", "danger"
+            )
+            return render_template(
+                "subjects/form.html", form=form, title="Tambah Mata Pelajaran"
+            )
         flash("Mata pelajaran ditambahkan.", "success")
         return redirect(url_for("subjects.index"))
-    return render_template("subjects/form.html", form=form, title="Tambah Mata Pelajaran")
+    return render_template(
+        "subjects/form.html", form=form, title="Tambah Mata Pelajaran"
+    )
 
 
 @bp.route("/edit/<int:subject_id>", methods=["GET", "POST"])

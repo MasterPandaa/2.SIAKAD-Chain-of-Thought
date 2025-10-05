@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required
 from sqlalchemy import select
 
 from ..extensions import db
-from ..models import Student, Classroom, User, RoleEnum
+from ..models import Classroom, RoleEnum, Student, User
 from ..utils.decorators import role_required
 from .forms import StudentForm
 
@@ -14,13 +14,21 @@ bp = Blueprint("students", __name__, url_prefix="/students")
 @login_required
 @role_required("admin")
 def index():
-    students = db.session.execute(select(Student).order_by(Student.name)).scalars().all()
+    students = (
+        db.session.execute(select(Student).order_by(
+            Student.name)).scalars().all()
+    )
     return render_template("students/index.html", students=students)
 
 
 def _populate_class_choices(form: StudentForm):
-    classes = db.session.execute(select(Classroom).order_by(Classroom.name)).scalars().all()
-    form.classroom_id.choices = [(-1, "- Tidak ada -")] + [(c.id, c.name) for c in classes]
+    classes = (
+        db.session.execute(select(Classroom).order_by(
+            Classroom.name)).scalars().all()
+    )
+    form.classroom_id.choices = [(-1, "- Tidak ada -")] + [
+        (c.id, c.name) for c in classes
+    ]
 
 
 @bp.route("/create", methods=["GET", "POST"])
@@ -46,11 +54,14 @@ def create():
         except Exception:
             db.session.rollback()
             flash("Gagal menyimpan siswa (kemungkinan NIS duplikat).", "danger")
-            return render_template("students/form.html", form=form, title="Tambah Siswa")
+            return render_template(
+                "students/form.html", form=form, title="Tambah Siswa"
+            )
         if form.create_user.data and form.username.data and form.password.data:
             u = User(
                 username=form.username.data.strip(),
-                email=(form.email.data.strip() or None) if form.email.data else None,
+                email=(form.email.data.strip()
+                       or None) if form.email.data else None,
                 role=RoleEnum.student,
             )
             u.set_password(form.password.data)
@@ -82,11 +93,19 @@ def edit(student_id):
         s.address = form.address.data or None
         s.gender = form.gender.data or None
         s.parent_phone = form.parent_phone.data or None
-        s.classroom_id = form.classroom_id.data if form.classroom_id.data != -1 else None
-        if form.create_user.data and not s.user and form.username.data and form.password.data:
+        s.classroom_id = (
+            form.classroom_id.data if form.classroom_id.data != -1 else None
+        )
+        if (
+            form.create_user.data
+            and not s.user
+            and form.username.data
+            and form.password.data
+        ):
             u = User(
                 username=form.username.data.strip(),
-                email=(form.email.data.strip() or None) if form.email.data else None,
+                email=(form.email.data.strip()
+                       or None) if form.email.data else None,
                 role=RoleEnum.student,
             )
             u.set_password(form.password.data)

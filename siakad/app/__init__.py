@@ -1,10 +1,12 @@
-from flask import Flask, render_template
-from .extensions import db, migrate, login_manager, bcrypt, csrf
-from .models import RoleEnum
-from . import extensions
-from config import get_config
-from flask_wtf.csrf import generate_csrf
 import logging
+
+from config import get_config
+from flask import Flask, render_template
+from flask_wtf.csrf import generate_csrf
+
+from . import extensions
+from .extensions import bcrypt, csrf, db, login_manager, migrate
+from .models import RoleEnum
 
 
 def create_app(config_class=None):
@@ -34,12 +36,12 @@ def create_app(config_class=None):
 
     # Blueprints (registered later when modules exist)
     from .auth.routes import bp as auth_bp
-    from .dashboard.routes import bp as dashboard_bp
-    from .students.routes import bp as students_bp
-    from .teachers.routes import bp as teachers_bp
-    from .subjects.routes import bp as subjects_bp
     from .classes.routes import bp as classes_bp
+    from .dashboard.routes import bp as dashboard_bp
     from .grades.routes import bp as grades_bp
+    from .students.routes import bp as students_bp
+    from .subjects.routes import bp as subjects_bp
+    from .teachers.routes import bp as teachers_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
