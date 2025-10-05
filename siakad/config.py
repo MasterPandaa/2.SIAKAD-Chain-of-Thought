@@ -1,7 +1,9 @@
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
+
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
@@ -13,7 +15,8 @@ class Config:
 
     # Engine options
     SQLALCHEMY_ENGINE_OPTIONS = {
-        "pool_pre_ping": os.getenv("SQLALCHEMY_ENGINE_PRE_PING", "true").lower() == "true",
+        "pool_pre_ping": os.getenv("SQLALCHEMY_ENGINE_PRE_PING", "true").lower()
+        == "true",
         "pool_recycle": int(os.getenv("SQLALCHEMY_ENGINE_POOL_RECYCLE", "280")),
     }
 

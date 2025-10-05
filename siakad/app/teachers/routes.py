@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required
 from sqlalchemy import select
 
 from ..extensions import db
-from ..models import Teacher, User, RoleEnum
+from ..models import RoleEnum, Teacher, User
 from ..utils.decorators import role_required
 from .forms import TeacherForm
 
@@ -14,7 +14,10 @@ bp = Blueprint("teachers", __name__, url_prefix="/teachers")
 @login_required
 @role_required("admin")
 def index():
-    teachers = db.session.execute(select(Teacher).order_by(Teacher.name)).scalars().all()
+    teachers = (
+        db.session.execute(select(Teacher).order_by(
+            Teacher.name)).scalars().all()
+    )
     return render_template("teachers/index.html", teachers=teachers)
 
 
@@ -40,7 +43,8 @@ def create():
         if form.create_user.data and form.username.data and form.password.data:
             u = User(
                 username=form.username.data.strip(),
-                email=(form.email.data.strip() or None) if form.email.data else None,
+                email=(form.email.data.strip()
+                       or None) if form.email.data else None,
                 role=RoleEnum.teacher,
             )
             u.set_password(form.password.data)
@@ -68,10 +72,16 @@ def edit(teacher_id):
         t.name = form.name.data.strip()
         t.phone = form.phone.data or None
         t.address = form.address.data or None
-        if form.create_user.data and not t.user and form.username.data and form.password.data:
+        if (
+            form.create_user.data
+            and not t.user
+            and form.username.data
+            and form.password.data
+        ):
             u = User(
                 username=form.username.data.strip(),
-                email=(form.email.data.strip() or None) if form.email.data else None,
+                email=(form.email.data.strip()
+                       or None) if form.email.data else None,
                 role=RoleEnum.teacher,
             )
             u.set_password(form.password.data)

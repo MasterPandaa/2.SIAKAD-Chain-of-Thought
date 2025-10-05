@@ -3,7 +3,7 @@ from flask_login import login_required
 from sqlalchemy import func
 
 from ..extensions import db
-from ..models import Student, Teacher, Subject, Grade, Enrollment
+from ..models import Enrollment, Grade, Student, Subject, Teacher
 
 bp = Blueprint("dashboard", __name__)
 
