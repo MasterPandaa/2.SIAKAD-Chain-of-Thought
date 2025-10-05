@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Kelas - SIAKAD{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>Data Kelas</h3>
+  <a class="btn btn-primary" href="{{ url_for('classes.create') }}">+ Tambah Kelas</a>
+</div>
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-striped mb-0">
+        <thead>
+          <tr>
+            <th>Nama</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in classes %}
+          <tr>
+            <td>{{ c.name }}</td>
+            <td class="text-nowrap">
+              <a class="btn btn-sm btn-outline-primary" href="{{ url_for('classes.edit', class_id=c.id) }}">Edit</a>
+              <form class="d-inline" method="post" action="{{ url_for('classes.delete', class_id=c.id) }}" onsubmit="return confirm('Hapus kelas ini?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-danger" type="submit">Hapus</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="2" class="text-center">Belum ada data.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

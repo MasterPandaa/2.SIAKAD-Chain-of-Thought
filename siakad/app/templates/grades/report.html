@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Laporan Nilai - SIAKAD{% endblock %}
+{% block content %}
+<h3 class="mb-3">Laporan Nilai per Kelas</h3>
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="post" class="row g-3 align-items-end">
+      {{ form.hidden_tag() }}
+      <div class="col-md-6">
+        {{ form.subject_id.label(class="form-label") }}
+        {{ form.subject_id(class="form-select") }}
+      </div>
+      <div class="col-md-4">
+        {{ form.classroom_id.label(class="form-label") }}
+        {{ form.classroom_id(class="form-select") }}
+      </div>
+      <div class="col-md-2">
+        {{ form.submit(class="btn btn-primary w-100") }}
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if rows is not none %}
+<div class="card">
+  <div class="card-header">{{ subject.code }} - {{ subject.name }} | Kelas: {{ classroom.name }}</div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-striped mb-0">
+        <thead>
+          <tr>
+            <th>Nama</th>
+            <th>Tugas</th>
+            <th>UTS</th>
+            <th>UAS</th>
+            <th>Nilai Akhir</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s, g in rows %}
+          <tr>
+            <td>{{ s.name }}</td>
+            <td>{{ g.tugas if g and g.tugas is not none else '-' }}</td>
+            <td>{{ g.uts if g and g.uts is not none else '-' }}</td>
+            <td>{{ g.uas if g and g.uas is not none else '-' }}</td>
+            <td>{{ g.nilai_akhir if g and g.nilai_akhir is not none else '-' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="text-center">Tidak ada data.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

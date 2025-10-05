@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Transkrip Nilai - SIAKAD{% endblock %}
+{% block content %}
+<h3 class="mb-3">Transkrip Nilai {% if student %} {{ student.name }}{% endif %}</h3>
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-striped mb-0">
+        <thead>
+          <tr>
+            <th>Kode</th>
+            <th>Mata Pelajaran</th>
+            <th>Tugas</th>
+            <th>UTS</th>
+            <th>UAS</th>
+            <th>Nilai Akhir</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for subject, grade in items %}
+          <tr>
+            <td>{{ subject.code }}</td>
+            <td>{{ subject.name }}</td>
+            <td>{{ grade.tugas if grade and grade.tugas is not none else '-' }}</td>
+            <td>{{ grade.uts if grade and grade.uts is not none else '-' }}</td>
+            <td>{{ grade.uas if grade and grade.uas is not none else '-' }}</td>
+            <td>{{ grade.nilai_akhir if grade and grade.nilai_akhir is not none else '-' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="text-center">Belum ada nilai.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

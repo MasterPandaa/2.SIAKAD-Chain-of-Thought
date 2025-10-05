@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Detail Siswa - SIAKAD{% endblock %}
+{% block content %}
+<h3 class="mb-3">Detail Siswa</h3>
+<div class="card">
+  <div class="card-body">
+    <div class="row mb-2"><div class="col-md-3 fw-bold">NIS</div><div class="col">{{ student.nis }}</div></div>
+    <div class="row mb-2"><div class="col-md-3 fw-bold">Nama</div><div class="col">{{ student.name }}</div></div>
+    <div class="row mb-2"><div class="col-md-3 fw-bold">Tanggal Lahir</div><div class="col">{{ student.birth_date or '-' }}</div></div>
+    <div class="row mb-2"><div class="col-md-3 fw-bold">Alamat</div><div class="col">{{ student.address or '-' }}</div></div>
+    <div class="row mb-2"><div class="col-md-3 fw-bold">Jenis Kelamin</div><div class="col">{{ 'Laki-laki' if student.gender == 'M' else ('Perempuan' if student.gender == 'F' else '-') }}</div></div>
+    <div class="row mb-2"><div class="col-md-3 fw-bold">Orang Tua</div><div class="col">{{ student.parent_phone or '-' }}</div></div>
+    <div class="row mb-2"><div class="col-md-3 fw-bold">Kelas</div><div class="col">{{ student.classroom.name if student.classroom else '-' }}</div></div>
+    <div class="mt-3">
+      <a class="btn btn-secondary" href="{{ url_for('students.index') }}">Kembali</a>
+      <a class="btn btn-dark" href="{{ url_for('grades.transcript_admin', student_id=student.id) }}">Lihat Transkrip</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

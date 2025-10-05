@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - SIAKAD{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card text-bg-light">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-bold">Total Siswa</div>
+            <div class="display-6">{{ total_students }}</div>
+          </div>
+          <div class="fs-1">👨‍🎓</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-bg-light">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-bold">Total Guru</div>
+            <div class="display-6">{{ total_teachers }}</div>
+          </div>
+          <div class="fs-1">👩‍🏫</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-bg-light">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-bold">Total Mapel</div>
+            <div class="display-6">{{ total_subjects }}</div>
+          </div>
+          <div class="fs-1">📚</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Rata-rata Nilai per Mata Pelajaran</div>
+  <div class="card-body">
+    <canvas id="avgChart" height="120"></canvas>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const ctx = document.getElementById('avgChart');
+  const labels = {{ chart_labels|tojson }};
+  const data = {{ chart_data|tojson }};
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Nilai Rata-rata',
+        data: data,
+        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: { scales: { y: { beginAtZero: true, max: 100 } } }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Mata Pelajaran - SIAKAD{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>Data Mata Pelajaran</h3>
+  {% set role = current_user.role.value %}
+  {% if role == 'admin' %}
+    <a class="btn btn-primary" href="{{ url_for('subjects.create') }}">+ Tambah Mapel</a>
+  {% endif %}
+</div>
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-striped mb-0">
+        <thead>
+          <tr>
+            <th>Kode</th>
+            <th>Nama</th>
+            <th>SKS</th>
+            <th>Guru</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in subjects %}
+          <tr>
+            <td>{{ s.code }}</td>
+            <td>{{ s.name }}</td>
+            <td>{{ s.sks }}</td>
+            <td>{{ s.teacher.name if s.teacher else '-' }}</td>
+            <td class="text-nowrap">
+              <a class="btn btn-sm btn-outline-dark" href="{{ url_for('grades.manage_subject', subject_id=s.id) }}">Kelola Nilai</a>
+              {% if role == 'admin' %}
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('subjects.edit', subject_id=s.id) }}">Edit</a>
+                <form class="d-inline" method="post" action="{{ url_for('subjects.delete', subject_id=s.id) }}" onsubmit="return confirm('Hapus mapel ini?');">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Hapus</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="text-center">Belum ada data.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

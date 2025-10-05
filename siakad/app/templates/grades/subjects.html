@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Kelola Nilai - SIAKAD{% endblock %}
+{% block content %}
+<h3 class="mb-3">Mata Pelajaran</h3>
+<div class="list-group">
+  {% for s in subjects %}
+  <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{{ url_for('grades.manage_subject', subject_id=s.id) }}">
+    <span>{{ s.code }} - {{ s.name }}</span>
+    <span class="badge text-bg-secondary">SKS {{ s.sks }}</span>
+  </a>
+  {% else %}
+  <div class="alert alert-info">Tidak ada mata pelajaran tersedia.</div>
+  {% endfor %}
+</div>
+{% endblock %}
